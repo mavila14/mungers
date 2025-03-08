@@ -1,14 +1,23 @@
 import streamlit as st
 import re
 import json
-import google.generativeai as genai  # Updated import statement; ensure you have installed the correct package.
+import google.generativeai as palm  # <-- The new library
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# --------------------------------------------------
+# --------------------------------------------------------------------
+# Configure your Google Generative AI API key once at the start:
+# --------------------------------------------------------------------
+GOOGLE_API_KEY = st.secrets["google"]["api_key"]
+palm.configure(api_key=GOOGLE_API_KEY)
+
+# We'll reference this model for all calls:
+GEMINI_MODEL = "models/gemini-2.0-flash"
+
+# --------------------------------------------------------------------
 # Custom CSS: World-Class UX Aesthetics
-# --------------------------------------------------
+# --------------------------------------------------------------------
 custom_css = """
 <style>
 /* Typography */
@@ -413,9 +422,9 @@ p {
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --------------------------------------------------
+# --------------------------------------------------------------------
 # Helper functions for visual elements
-# --------------------------------------------------
+# --------------------------------------------------------------------
 def render_logo():
     st.markdown("""
     <div class="logo">
@@ -450,18 +459,25 @@ def render_factor_card(factor, value, description):
     """, unsafe_allow_html=True)
 
 def create_radar_chart(factors):
-    categories = ['Discretionary Income', 'Opportunity Cost', 'Goal Alignment', 
-                 'Long-Term Impact', 'Behavioral']
+    categories = [
+        'Discretionary Income', 
+        'Opportunity Cost', 
+        'Goal Alignment', 
+        'Long-Term Impact', 
+        'Behavioral'
+    ]
     
-    values = [factors['D'], factors['O'], factors['G'], factors['L'], factors['B']]
+    values = [
+        factors['D'], 
+        factors['O'], 
+        factors['G'], 
+        factors['L'], 
+        factors['B']
+    ]
     # Add the first value at the end to close the shape
     values.append(values[0])
     categories.append(categories[0])
     
-    # Create angle values for radar chart
-    angles = [n / float(len(categories)-1) * 2 * 3.14159 for n in range(len(categories))]
-    
-    # Create a polar plot
     fig = go.Figure()
     
     # Add radar chart trace
@@ -477,7 +493,7 @@ def create_radar_chart(factors):
     # Add horizontal lines for reference
     for i in [-2, -1, 0, 1, 2]:
         fig.add_trace(go.Scatterpolar(
-            r=[i] * (len(categories)),
+            r=[i] * len(categories),
             theta=categories,
             line=dict(color='rgba(200, 200, 200, 0.5)', width=1, dash='dash'),
             name=f'Level {i}',
@@ -523,12 +539,11 @@ def create_pds_gauge(pds):
     else:
         color = "#ed8936"  # Orange for neutral
     
-    # Create gauge chart
     fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = pds,
-        domain = {'x': [0, 1], 'y': [0, 1]},
-        gauge = {
+        mode="gauge+number",
+        value=pds,
+        domain={'x': [0, 1], 'y': [0, 1]},
+        gauge={
             'axis': {'range': [-10, 10], 'tickwidth': 1, 'tickcolor': "#2d3748"},
             'bar': {'color': color},
             'bgcolor': "white",
@@ -556,13 +571,9 @@ def create_pds_gauge(pds):
     
     return fig
 
-# --------------------------------------------------
-# Gemini API Setup
-# --------------------------------------------------
-# Load the API key securely from Streamlit secrets
-GOOGLE_API_KEY = st.secrets["google"]["api_key"]
-GEMINI_MODEL = "gemini-2.0-flash"
-
+# --------------------------------------------------------------------
+# get_factors_from_gemini: Using the new google-generativeai library
+# --------------------------------------------------------------------
 def get_factors_from_gemini(
     leftover_income: float,
     has_high_interest_debt: str,
@@ -572,10 +583,9 @@ def get_factors_from_gemini(
     item_cost: float
 ) -> dict:
     """
-    Calls the Gemini API using an explicit prompt that explains how to assign each factor.
-    Returns factor values (D, O, G, L, B) as integers (range -2 to +2).
+    Calls the Gemini 2.0 Flash model with a prompt that explains how to assign each factor.
+    Returns factor values (D, O, G, L, B) as integers in the range -2 to +2.
     """
-    client = genai.Client(api_key=GOOGLE_API_KEY)
     prompt_text = f"""
 We have a Purchase Decision Score (PDS) formula:
 PDS = D + O + G + L + B,
@@ -605,30 +615,37 @@ Return the result in valid JSON format (only the JSON as the final line), for ex
   "L": 2,
   "B": 2
 }}
-    """
+    """.strip()
+
     try:
-        response = client.models.generate_content(
+        # Use palm.generate_text to get a response
+        response = palm.generate_text(
             model=GEMINI_MODEL,
-            contents=prompt_text.strip()
+            prompt=prompt_text,
+            temperature=0.2,      # optional tuning
+            max_output_tokens=512 # optional tuning
         )
-        output_text = response.text
-        # Use regex to extract candidate JSON blocks
-        candidates = re.findall(r"(\{[\s\S]*?\})", output_text, re.DOTALL)
-        factors = None
+
+        if not response or not response.candidates:
+            st.error("No text candidates returned from the Gemini model.")
+            return {"D": 0, "O": 0, "G": 0, "L": 0, "B": 0}
+
+        output_text = response.candidates[0]["output"]
+        # Attempt to extract JSON from the output
+        candidates = re.findall(r"(\{[\s\S]*?\})", output_text)
         for candidate in candidates:
             try:
                 data = json.loads(candidate)
                 if all(k in data for k in ["D", "O", "G", "L", "B"]):
-                    factors = data
-                    break
+                    return data
             except json.JSONDecodeError:
                 continue
-        if factors is None:
-            st.error("Unable to parse JSON from Gemini model output.")
-            return {"D": 0, "O": 0, "G": 0, "L": 0, "B": 0}
-        return factors
+
+        st.error("Unable to parse valid JSON from model output.")
+        return {"D": 0, "O": 0, "G": 0, "L": 0, "B": 0}
+
     except Exception as e:
-        st.error(f"Error calling Gemini API: {e}")
+        st.error(f"Error calling Gemini model: {e}")
         return {"D": 0, "O": 0, "G": 0, "L": 0, "B": 0}
 
 def compute_pds(factors: dict) -> int:
@@ -644,9 +661,9 @@ def get_recommendation(pds: int) -> tuple:
     else:
         return "Borderline—evaluate carefully before buying.", "neutral"
 
-# --------------------------------------------------
+# --------------------------------------------------------------------
 # Preset Scenarios for Testing
-# --------------------------------------------------
+# --------------------------------------------------------------------
 preset_scenarios = {
     "Scenario A: Essential Upgrade": {
         "item_name": "High-Performance Laptop",
@@ -674,14 +691,13 @@ preset_scenarios = {
     }
 }
 
-# --------------------------------------------------
+# --------------------------------------------------------------------
 # Sidebar Navigation
-# --------------------------------------------------
+# --------------------------------------------------------------------
 with st.sidebar:
     render_logo()
     st.markdown("##### Decision Assistant")
     
-    # Custom radio buttons
     pages = ["Decision Tool", "Features", "Sign Up", "Contact"]
     selection = st.radio("", pages, label_visibility="collapsed")
     
@@ -697,9 +713,9 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("© 2025 Munger AI")
 
-# --------------------------------------------------
+# --------------------------------------------------------------------
 # Main Page Logic
-# --------------------------------------------------
+# --------------------------------------------------------------------
 if selection == "Decision Tool":
     # Landing Page
     st.markdown("""
@@ -710,8 +726,10 @@ if selection == "Decision Tool":
     """, unsafe_allow_html=True)
     
     # Preset scenario selection
-    preset_choice = st.selectbox("Choose a Preset Scenario (or select 'Custom' to enter your own):", 
-                                 list(preset_scenarios.keys()) + ["Custom"])
+    preset_choice = st.selectbox(
+        "Choose a Preset Scenario (or select 'Custom' to enter your own):", 
+        list(preset_scenarios.keys()) + ["Custom"]
+    )
     if preset_choice != "Custom":
         scenario = preset_scenarios[preset_choice]
     else:
@@ -724,15 +742,41 @@ if selection == "Decision Tool":
     with st.form("purchase_decision_form"):
         col1, col2 = st.columns(2)
         with col1:
-            item_name = st.text_input("Item Name", value=scenario.get("item_name", "New Laptop"))
-            item_cost = st.number_input("Item Cost ($)", min_value=0.0, value=scenario.get("item_cost", 500.0), step=50.0)
-            main_goal = st.text_input("Main Financial Goal", value=scenario.get("main_financial_goal", "Save for a house"))
+            item_name = st.text_input(
+                "Item Name", 
+                value=scenario.get("item_name", "New Laptop")
+            )
+            item_cost = st.number_input(
+                "Item Cost ($)", 
+                min_value=0.0, 
+                value=scenario.get("item_cost", 500.0), 
+                step=50.0
+            )
+            main_goal = st.text_input(
+                "Main Financial Goal", 
+                value=scenario.get("main_financial_goal", "Save for a house")
+            )
         with col2:
-            leftover_income = st.number_input("Monthly Leftover Income ($)", min_value=0.0, value=scenario.get("leftover_income", 1000.0), step=50.0)
-            has_debt = st.selectbox("High-Interest Debt?", ["Yes", "No", "Unsure"], 
-                                   index=["Yes", "No", "Unsure"].index(scenario.get("has_high_interest_debt", "Yes")))
-            purchase_urgency = st.selectbox("Purchase Urgency", ["Urgent Needs", "Mostly Wants", "Mixed"], 
-                                           index=["Urgent Needs", "Mostly Wants", "Mixed"].index(scenario.get("purchase_urgency", "Urgent Needs")))
+            leftover_income = st.number_input(
+                "Monthly Leftover Income ($)", 
+                min_value=0.0, 
+                value=scenario.get("leftover_income", 1000.0), 
+                step=50.0
+            )
+            has_debt = st.selectbox(
+                "High-Interest Debt?", 
+                ["Yes", "No", "Unsure"], 
+                index=["Yes", "No", "Unsure"].index(
+                    scenario.get("has_high_interest_debt", "Yes")
+                )
+            )
+            purchase_urgency = st.selectbox(
+                "Purchase Urgency", 
+                ["Urgent Needs", "Mostly Wants", "Mixed"], 
+                index=["Urgent Needs", "Mostly Wants", "Mixed"].index(
+                    scenario.get("purchase_urgency", "Urgent Needs")
+                )
+            )
         
         submit_pdt = st.form_submit_button(
             "Generate AI Decision",
@@ -768,7 +812,6 @@ if selection == "Decision Tool":
             
             with col1:
                 st.markdown("### Decision Factors")
-                # Display individual factors with cards
                 factor_descriptions = {
                     'D': 'Discretionary Income',
                     'O': 'Opportunity Cost', 
@@ -776,17 +819,14 @@ if selection == "Decision Tool":
                     'L': 'Long-Term Impact',
                     'B': 'Behavioral/Psychological'
                 }
-                
                 for factor, description in factor_descriptions.items():
                     render_factor_card(factor, factors[factor], description)
             
             with col2:
                 st.markdown("### Factor Analysis")
-                # Radar chart of all factors
                 radar_fig = create_radar_chart(factors)
                 st.plotly_chart(radar_fig, use_container_width=True)
                 
-                # PDS Gauge
                 gauge_fig = create_pds_gauge(pds)
                 st.plotly_chart(gauge_fig, use_container_width=True)
             
