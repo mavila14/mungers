@@ -1,7 +1,7 @@
 import streamlit as st
 import re
 import json
-from google import genai  # pip install google-ai-genai
+import google.generativeai as genai  # Updated import statement; ensure you have installed the correct package.
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -559,7 +559,8 @@ def create_pds_gauge(pds):
 # --------------------------------------------------
 # Gemini API Setup
 # --------------------------------------------------
-GOOGLE_API_KEY = "AIzaSyB-RIjhhODp6aPTzqVcwbXD894oebXFCUY"
+# Load the API key securely from Streamlit secrets
+GOOGLE_API_KEY = st.secrets["google"]["api_key"]
 GEMINI_MODEL = "gemini-2.0-flash"
 
 def get_factors_from_gemini(
