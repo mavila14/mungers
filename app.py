@@ -657,11 +657,11 @@ def compute_pds(factors: dict) -> int:
 def get_recommendation(pds: int) -> tuple:
     """Return a recommendation based on the PDS."""
     if pds >= 5:
-        return "Likely a strong purchase choice.", "positive"
+        return "Buy.", "positive"
     elif pds < 0:
-        return "Likely not advisable at this time.", "negative"
+        return "Dont Buy.", "negative"
     else:
-        return "Borderline—evaluate carefully before buying.", "neutral"
+        return "Borderline - evaluate carefully before buying.", "neutral"
 
 # --------------------------------------------------------------------
 # Preset Scenarios for Testing
