@@ -1,23 +1,23 @@
 import streamlit as st
 import re
 import json
-import google.generativeai as palm  # <-- The new library
+import google.generativeai as palm  # The new library
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Configure your Google Generative AI API key once at the start:
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 GOOGLE_API_KEY = st.secrets["google"]["api_key"]
 palm.configure(api_key=GOOGLE_API_KEY)
 
 # We'll reference this model for all calls:
 GEMINI_MODEL = "models/gemini-2.0-flash"
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Custom CSS: World-Class UX Aesthetics
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 custom_css = """
 <style>
 /* Typography */
@@ -422,9 +422,9 @@ p {
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Helper functions for visual elements
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def render_logo():
     st.markdown("""
     <div class="logo">
@@ -571,9 +571,9 @@ def create_pds_gauge(pds):
     
     return fig
 
-# --------------------------------------------------------------------
-# get_factors_from_gemini: Using the new google-generativeai library
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# get_factors_from_gemini: Using the new google-generativeai library (NO Client!)
+# ------------------------------------------------------------------------------
 def get_factors_from_gemini(
     leftover_income: float,
     has_high_interest_debt: str,
@@ -618,7 +618,6 @@ Return the result in valid JSON format (only the JSON as the final line), for ex
     """.strip()
 
     try:
-        # Use palm.generate_text to get a response
         response = palm.generate_text(
             model=GEMINI_MODEL,
             prompt=prompt_text,
@@ -661,9 +660,9 @@ def get_recommendation(pds: int) -> tuple:
     else:
         return "Borderline—evaluate carefully before buying.", "neutral"
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Preset Scenarios for Testing
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 preset_scenarios = {
     "Scenario A: Essential Upgrade": {
         "item_name": "High-Performance Laptop",
@@ -691,15 +690,16 @@ preset_scenarios = {
     }
 }
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Sidebar Navigation
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 with st.sidebar:
     render_logo()
     st.markdown("##### Decision Assistant")
     
     pages = ["Decision Tool", "Features", "Sign Up", "Contact"]
-    selection = st.radio("", pages, label_visibility="collapsed")
+    # Provide a label so we don't get the "label got an empty value" warning:
+    selection = st.radio("Navigate to page:", pages, label_visibility="collapsed")
     
     st.markdown("---")
     st.markdown("### Quick Tips")
@@ -713,9 +713,9 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("© 2025 Munger AI")
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Main Page Logic
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 if selection == "Decision Tool":
     # Landing Page
     st.markdown("""
