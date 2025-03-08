@@ -1,33 +1,430 @@
 import streamlit as st
 import re
 import json
-import google.generativeai as palm  # The new library
+import google.generativeai as genai  # <-- Updated import
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# ------------------------------------------------------------------------------
-# 1) Configure your Google Generative AI API key once at the start
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Configure your Google Generative AI API key once at the start:
+# --------------------------------------------------------------------
 GOOGLE_API_KEY = st.secrets["google"]["api_key"]
-palm.configure(api_key=GOOGLE_API_KEY)
+genai.configure(api_key=GOOGLE_API_KEY)
 
 # We'll reference this model for all calls:
-GEMINI_MODEL = "models/gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.0-flash"  # <-- Removed "models/" prefix
 
-# ------------------------------------------------------------------------------
-# 2) Custom CSS: World-Class UX Aesthetics
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Custom CSS: World-Class UX Aesthetics
+# --------------------------------------------------------------------
 custom_css = """
 <style>
-/* ...[CSS omitted for brevity—same as before]... */
+/* Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Base styles */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1a202c;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Overall page styling with subtle gradient */
+.main {
+    background: linear-gradient(145deg, #f8fafc 0%, #edf2f7 100%);
+}
+
+/* Header and text styling */
+h1 {
+    font-weight: 800;
+    font-size: 2.5rem;
+    letter-spacing: -0.025em;
+    color: #1a202c;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: -0.025em;
+    color: #2d3748;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+h3 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: #4a5568;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4a5568;
+    margin-bottom: 1rem;
+}
+
+/* Layout Containers */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+    background-color: #fff;
+    border-right: 1px solid #e2e8f0;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    padding-top: 2rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+[data-testid="stSidebar"] h1 {
+    font-size: 1.5rem;
+    color: #5a67d8;
+    margin-bottom: 2rem;
+}
+
+/* Custom form inputs */
+[data-testid="stTextInput"] input, 
+[data-testid="stNumberInput"] input, 
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+[data-testid="stTextInput"] input:focus, 
+[data-testid="stNumberInput"] input:focus, 
+[data-testid="stTextArea"] textarea:focus {
+    border-color: #5a67d8;
+    box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.15);
+}
+
+/* Buttons */
+[data-testid="baseButton-secondary"], 
+.stButton button {
+    background: linear-gradient(135deg, #5a67d8 0%, #4c51bf 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(90, 103, 216, 0.2), 0 1px 3px rgba(90, 103, 216, 0.1);
+}
+
+[data-testid="baseButton-secondary"]:hover, 
+.stButton button:hover {
+    background: linear-gradient(135deg, #4c51bf 0%, #434190 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(90, 103, 216, 0.25), 0 3px 6px rgba(90, 103, 216, 0.15);
+}
+
+[data-testid="baseButton-secondary"]:active, 
+.stButton button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 6px rgba(90, 103, 216, 0.15), 0 1px 3px rgba(90, 103, 216, 0.1);
+}
+
+/* Card styling */
+.card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.025);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f0f4f8;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.07), 0 20px 30px rgba(0, 0, 0, 0.035);
+}
+
+/* Decision result box */
+.decision-box {
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    margin-top: 2rem;
+    border: 1px solid #f0f4f8;
+    box-shadow: 0 10px 25px rgba(90, 103, 216, 0.12), 0 4px 10px rgba(90, 103, 216, 0.08);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out forwards;
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+.decision-box h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #5a67d8;
+    margin-bottom: 1.5rem;
+}
+
+.decision-box strong {
+    color: #1a202c;
+    font-weight: 700;
+}
+
+.decision-box .score {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #5a67d8;
+    margin: 1rem 0;
+    text-shadow: 0 2px 4px rgba(90, 103, 216, 0.2);
+}
+
+/* Factor cards */
+.factor-card {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    border-left: 4px solid #5a67d8;
+}
+
+.factor-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateX(3px);
+}
+
+.factor-card .factor-letter {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #5a67d8;
+    margin-right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ebf4ff;
+    border-radius: 50%;
+}
+
+.factor-card .factor-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+.factor-card .factor-value.positive {
+    color: #48bb78;
+}
+
+.factor-card .factor-value.negative {
+    color: #f56565;
+}
+
+.factor-card .factor-value.neutral {
+    color: #a0aec0;
+}
+
+/* Landing page title styling */
+.landing-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #5a67d8 0%, #4c51bf 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    text-align: center;
+}
+
+.landing-subtitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Logo styling */
+.logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #5a67d8 0%, #4c51bf 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #5a67d8;
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(90, 103, 216, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(90, 103, 216, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(90, 103, 216, 0);
+    }
+}
+
+/* Decision recommendation styling */
+.recommendation {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.recommendation.positive {
+    color: #48bb78;
+}
+
+.recommendation.negative {
+    color: #f56565;
+}
+
+.recommendation.neutral {
+    color: #ed8936;
+}
+
+/* Section headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+.section-icon {
+    width: 32px;
+    height: 32px;
+    background: #ebf4ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    color: #5a67d8;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Custom radio buttons for Navigation */
+.custom-radio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.custom-radio-option {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.custom-radio-option:hover {
+    background-color: #f7fafc;
+    transform: translateX(3px);
+}
+
+.custom-radio-option.active {
+    background-color: #ebf4ff;
+    border-color: #5a67d8;
+    color: #5a67d8;
+    font-weight: 600;
+}
+
+/* Form layout */
+.form-2-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Success & Error messages */
+.success-message, .error-message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.3s ease-out forwards;
+}
+
+.success-message {
+    background-color: #f0fff4;
+    border: 1px solid #c6f6d5;
+    color: #2f855a;
+}
+
+.error-message {
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    color: #c53030;
+}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# ------------------------------------------------------------------------------
-# 3) Helper Functions for Visual Elements
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Helper functions for visual elements
+# --------------------------------------------------------------------
 def render_logo():
     st.markdown("""
     <div class="logo">
@@ -69,12 +466,21 @@ def create_radar_chart(factors):
         'Long-Term Impact', 
         'Behavioral'
     ]
-    values = [factors['D'], factors['O'], factors['G'], factors['L'], factors['B']]
-    # Close the shape by repeating the first value
+    
+    values = [
+        factors['D'], 
+        factors['O'], 
+        factors['G'], 
+        factors['L'], 
+        factors['B']
+    ]
+    # Add the first value at the end to close the shape
     values.append(values[0])
     categories.append(categories[0])
     
     fig = go.Figure()
+    
+    # Add radar chart trace
     fig.add_trace(go.Scatterpolar(
         r=values,
         theta=categories,
@@ -94,16 +500,23 @@ def create_radar_chart(factors):
             showlegend=False
         ))
     
-    # Layout
+    # Update layout
     fig.update_layout(
         polar=dict(
             radialaxis=dict(
                 visible=True,
                 range=[-3, 3],
                 tickvals=[-2, -1, 0, 1, 2],
+                showticklabels=True,
+                ticks='',
+                linewidth=0,
+                gridwidth=0.5,
                 gridcolor='rgba(200, 200, 200, 0.3)'
             ),
             angularaxis=dict(
+                tickwidth=1,
+                linewidth=1,
+                gridwidth=1,
                 gridcolor='rgba(200, 200, 200, 0.3)'
             ),
             bgcolor='rgba(255, 255, 255, 0.9)'
@@ -114,29 +527,38 @@ def create_radar_chart(factors):
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)'
     )
+    
     return fig
 
 def create_pds_gauge(pds):
-    # Define gauge color
+    # Define gauge colors based on value
     if pds >= 5:
-        color = "#48bb78"  # Green
+        color = "#48bb78"  # Green for positive
     elif pds < 0:
-        color = "#f56565"  # Red
+        color = "#f56565"  # Red for negative
     else:
-        color = "#ed8936"  # Orange
+        color = "#ed8936"  # Orange for neutral
     
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pds,
         domain={'x': [0, 1], 'y': [0, 1]},
         gauge={
-            'axis': {'range': [-10, 10]},
+            'axis': {'range': [-10, 10], 'tickwidth': 1, 'tickcolor': "#2d3748"},
             'bar': {'color': color},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "#e2e8f0",
             'steps': [
                 {'range': [-10, 0], 'color': '#fed7d7'},
                 {'range': [0, 5], 'color': '#feebc8'},
                 {'range': [5, 10], 'color': '#c6f6d5'}
             ],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': 0
+            }
         }
     ))
     
@@ -146,11 +568,12 @@ def create_pds_gauge(pds):
         paper_bgcolor='rgba(0,0,0,0)',
         font={'color': "#2d3748", 'family': "Inter, sans-serif"}
     )
+    
     return fig
 
-# ------------------------------------------------------------------------------
-# 4) get_factors_from_gemini: Using the new google-generativeai library
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# get_factors_from_gemini: Using the updated google-generativeai library
+# --------------------------------------------------------------------
 def get_factors_from_gemini(
     leftover_income: float,
     has_high_interest_debt: str,
@@ -195,19 +618,21 @@ Return the result in valid JSON format (only the JSON as the final line), for ex
     """.strip()
 
     try:
-        # No "Client" usage here! Just palm.generate_text
-        response = palm.generate_text(
-            model=GEMINI_MODEL,
-            prompt=prompt_text,
-            temperature=0.2,      # optional
-            max_output_tokens=512 # optional
+        # Create the model and generate content
+        model = genai.GenerativeModel(GEMINI_MODEL)
+        response = model.generate_content(
+            prompt_text,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.2,
+                max_output_tokens=512
+            )
         )
 
-        if not response or not response.candidates:
-            st.error("No text candidates returned from the Gemini model.")
+        if not response:
+            st.error("No response returned from the Gemini model.")
             return {"D": 0, "O": 0, "G": 0, "L": 0, "B": 0}
 
-        output_text = response.candidates[0]["output"]
+        output_text = response.text
         # Attempt to extract JSON from the output
         candidates = re.findall(r"(\{[\s\S]*?\})", output_text)
         for candidate in candidates:
@@ -238,9 +663,9 @@ def get_recommendation(pds: int) -> tuple:
     else:
         return "Borderline—evaluate carefully before buying.", "neutral"
 
-# ------------------------------------------------------------------------------
-# 5) Preset Scenarios for Testing
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Preset Scenarios for Testing
+# --------------------------------------------------------------------
 preset_scenarios = {
     "Scenario A: Essential Upgrade": {
         "item_name": "High-Performance Laptop",
@@ -268,16 +693,15 @@ preset_scenarios = {
     }
 }
 
-# ------------------------------------------------------------------------------
-# 6) Sidebar Navigation
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Sidebar Navigation
+# --------------------------------------------------------------------
 with st.sidebar:
     render_logo()
     st.markdown("##### Decision Assistant")
     
-    # Provide a non-empty label to avoid the accessibility warning
     pages = ["Decision Tool", "Features", "Sign Up", "Contact"]
-    selection = st.radio("Navigate to page:", pages, label_visibility="collapsed")
+    selection = st.radio("", pages, label_visibility="collapsed")
     
     st.markdown("---")
     st.markdown("### Quick Tips")
@@ -291,9 +715,9 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("© 2025 Munger AI")
 
-# ------------------------------------------------------------------------------
-# 7) Main Page Logic
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------
+# Main Page Logic
+# --------------------------------------------------------------------
 if selection == "Decision Tool":
     # Landing Page
     st.markdown("""
@@ -413,6 +837,7 @@ if selection == "Decision Tool":
             st.markdown('<div class="card">', unsafe_allow_html=True)
             
             insights = []
+            
             # Discretionary Income Factor
             if factors["D"] <= 0:
                 insights.append("⚠️ This purchase may strain your discretionary income.")
@@ -433,89 +858,29 @@ if selection == "Decision Tool":
             
             # Long-Term Impact Factor
             if factors["L"] < 0:
-                insights.append("⚠️ Be cautious of any potential ongoing costs this purchase may create.")
+                insights.append("⚠️ The long-term impact of this purchase might be negative.")
             elif factors["L"] > 1:
-                insights.append("✅ This purchase offers good long-term value.")
+                insights.append("✅ The long-term benefits of this purchase are promising.")
             
             # Behavioral/Psychological Factor
             if factors["B"] < 0:
-                insights.append("⚠️ Be aware of impulsive or stress-induced spending.")
+                insights.append("⚠️ This purchase might be driven by impulse rather than necessity.")
             elif factors["B"] > 1:
-                insights.append("✅ This purchase urgency is justified and reduces stress.")
+                insights.append("✅ This purchase is likely to bring positive psychological benefits.")
             
-            if not insights:
-                st.markdown("No specific red or green flags found. Evaluate carefully!")
-            else:
-                for insight in insights:
-                    st.markdown(f"- {insight}")
+            for insight in insights:
+                st.markdown(f"- {insight}")
             
             st.markdown('</div>', unsafe_allow_html=True)
 
 elif selection == "Features":
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    render_section_header("Product Features", "💡")
-    st.write(
-        """
-        **Munger AI** helps you:
-        - Quickly evaluate discretionary vs. essential spending
-        - Assess alignment with your financial goals
-        - Measure long-term ROI or cost burden
-        - Account for behavioral and psychological triggers
-        - Produce a clear Purchase Decision Score (PDS)
-        
-        **Additional Highlights**:
-        - Secure, real-time AI analysis
-        - Easy-to-read charts and gauges
-        - Mobile-friendly design
-        - Regular updates and new scenarios
-        """
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("## Features")
+    st.write("Coming soon: Detailed features of Munger AI will be listed here.")
 
 elif selection == "Sign Up":
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    render_section_header("Sign Up for Early Access", "🚀")
-    
-    with st.form("signup_form"):
-        full_name = st.text_input("Full Name")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        
-        submitted = st.form_submit_button("Sign Up")
-    
-    if submitted:
-        if full_name and email and password:
-            st.success(f"Thanks for signing up, {full_name}!")
-            st.write("We'll send you updates on the latest Munger AI features and improvements.")
-        else:
-            st.error("Please fill in all fields to sign up.")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("## Sign Up")
+    st.write("Sign up for early access and stay updated with our latest features!")
 
 elif selection == "Contact":
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    render_section_header("Contact Us", "✉️")
-    st.write(
-        """
-        **We'd love to hear from you!**  
-        - **Email**: support@mungerai.com  
-        - **Phone**: (123) 456-7890  
-        - **Address**: 123 Munger Lane, FinTech City, USA  
-
-        Or leave us a message below:
-        """
-    )
-    with st.form("contact_form"):
-        user_name = st.text_input("Your Name")
-        user_email = st.text_input("Your Email")
-        user_message = st.text_area("Your Message")
-        
-        contact_submitted = st.form_submit_button("Send Message")
-    
-    if contact_submitted:
-        if user_name and user_email and user_message:
-            st.success("Thank you! Your message has been sent.")
-        else:
-            st.error("Please complete all fields before sending.")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("## Contact")
+    st.write("Get in touch with us at contact@mungerai.com for any inquiries or support.")
