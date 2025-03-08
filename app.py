@@ -738,7 +738,7 @@ if selection == "Decision Tool":
         scenario = {}
     
     # Main form in a card
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    
     render_section_header("Purchase Details", "📊")
     
     with st.form("purchase_decision_form"):
