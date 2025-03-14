@@ -24,44 +24,48 @@ genai.configure(api_key=GOOGLE_API_KEY)
 GEMINI_MODEL = "gemini-2.0-flash"
 
 # ------------------------------------------------------------
-# Custom CSS: All gold text, dark background, rounded logos
+# Modern Dark Palette CSS
 # ------------------------------------------------------------
+# We're using a deep navy/charcoal background (#1E1E2F),
+# near-white text (#ECECEC), and a teal accent (#19A7CE).
+# Cards/inputs are slightly lighter (#2A2E3D),
+# and we keep corners rounded. Headings are teal for emphasis.
 custom_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Make the entire background dark */
+/* Global styling: set entire app background and base text color */
 html, body, [data-testid="stAppViewContainer"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #ffd700; /* gold text */
-    background-color: #101824 !important; /* dark background */
+    color: #ECECEC; /* near-white text */
+    background-color: #1E1E2F !important; /* dark background */
     -webkit-font-smoothing: antialiased;
 }
 
 /* Remove or override any .main background so main area isn't white */
 .main {
-    background-color: #101824 !important;
+    background-color: #1E1E2F !important;
 }
 
-/* Headings in gold */
+/* Headings in teal accent */
 h1, h2, h3, h4, h5, h6 {
-    color: #ffd700 !important;
+    color: #19A7CE !important;
     font-weight: 800;
     margin-bottom: 1rem;
 }
 
-/* Paragraphs in gold */
+/* Paragraph text in near-white */
 p {
     font-size: 1rem;
     line-height: 1.6;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
     margin-bottom: 1rem;
 }
 
 /* Sidebar styling */
 [data-testid="stSidebar"] {
-    background-color: #101824;
-    border-right: 1px solid #2f3b48;
+    background-color: #2A2E3D;
+    border-right: 1px solid #35354F;
 }
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     padding-top: 2rem;
@@ -73,27 +77,27 @@ p {
 [data-testid="stSidebar"] h3,
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] label {
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 
-/* Sidebar radio buttons in gold */
+/* Sidebar radio buttons in near-white */
 .stRadio > div[role="radiogroup"] > label {
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 .stRadio > div[role="radiogroup"] > label > div[data-testid="stMarkdownContainer"] > p {
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 
-/* Inputs */
+/* Inputs: slightly lighter background (#2A2E3D), near-white text */
 [data-testid="stTextInput"] input,
 [data-testid="stNumberInput"] input,
 [data-testid="stTextArea"] textarea,
 [data-testid="stSelectbox"] {
     border-radius: 8px;
-    border: 1px solid #2f3b48;
+    border: 1px solid #35354F;
     padding: 0.75rem;
-    background-color: #101824;
-    color: #ffd700 !important;
+    background-color: #2A2E3D;
+    color: #ECECEC !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     width: 100%;
     margin-bottom: 1rem;
@@ -101,26 +105,26 @@ p {
 [data-testid="stTextInput"] input:focus,
 [data-testid="stNumberInput"] input:focus,
 [data-testid="stTextArea"] textarea:focus {
-    border-color: #ffd700;
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+    border-color: #19A7CE;
+    box-shadow: 0 0 0 3px rgba(25,167,206, 0.2);
 }
 
-/* Labels in gold */
+/* Labels in near-white */
 [data-testid="stTextInput"] label,
 [data-testid="stNumberInput"] label,
 [data-testid="stTextArea"] label,
 [data-testid="stSelectbox"] label,
 .stRadio label,
 .stCheckbox label {
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 
-/* Buttons: dark background, gold text & border */
+/* Buttons: teal accent background, white text */
 [data-testid="baseButton-secondary"], 
 .stButton button {
-    background: #101824 !important;
-    color: #ffd700 !important;
-    border: 2px solid #ffd700 !important;
+    background: #19A7CE !important;
+    color: #FFFFFF !important;
+    border: none !important;
     border-radius: 20px !important;
     padding: 0.75rem 1.5rem !important;
     font-size: 1rem !important;
@@ -129,41 +133,40 @@ p {
     text-transform: uppercase !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 6px rgba(255, 215, 0, 0.3), 0 1px 3px rgba(255, 215, 0, 0.2) !important;
+    box-shadow: 0 4px 6px rgba(25,167,206, 0.3), 0 1px 3px rgba(25,167,206, 0.2) !important;
 }
 [data-testid="baseButton-secondary"]:hover, 
 .stButton button:hover {
-    background: #101824 !important;
-    color: #ffd700 !important;
+    background: #16A0C0 !important; /* slightly darker teal on hover */
     transform: translateY(-2px) !important;
-    box-shadow: 0 7px 14px rgba(255, 215, 0, 0.4), 0 3px 6px rgba(255, 215, 0, 0.3) !important;
+    box-shadow: 0 7px 14px rgba(25,167,206, 0.4), 0 3px 6px rgba(25,167,206, 0.3) !important;
 }
 [data-testid="baseButton-secondary"]:active, 
 .stButton button:active {
     transform: translateY(0) !important;
-    box-shadow: 0 3px 6px rgba(255, 215, 0, 0.2), 0 1px 3px rgba(255, 215, 0, 0.1) !important;
+    box-shadow: 0 3px 6px rgba(25,167,206, 0.2), 0 1px 3px rgba(25,167,206, 0.1) !important;
 }
 
 /* Card styling */
 .card {
-    background-color: #101824;
+    background-color: #2A2E3D;
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 10px 15px rgba(0, 0, 0, 0.1);
-    border: 1px solid #2f3b48;
+    border: 1px solid #35354F;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), 0 20px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), 0 20px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* Landing page title styling */
 .landing-title {
     font-size: 3.5rem;
     font-weight: 900;
-    color: #ffd700;
+    color: #19A7CE;
     margin-bottom: 0.5rem;
     letter-spacing: -0.05em;
     line-height: 1;
@@ -172,12 +175,12 @@ p {
 .landing-subtitle {
     font-size: 1.25rem;
     font-weight: 500;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
     margin-bottom: 2rem;
     text-align: center;
 }
 
-/* Smaller sidebar logo styling: round corners a bit */
+/* Smaller sidebar logo styling: round corners */
 .logo {
     display: flex;
     align-items: center;
@@ -186,13 +189,13 @@ p {
 .logo-img {
     width: 50px;
     height: 50px;
-    border-radius: 12px; /* more rounded */
+    border-radius: 12px;
     margin-right: 0.75rem;
 }
 .logo-text {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #ffd700;
+    color: #19A7CE;
 }
 
 /* Section header */
@@ -201,30 +204,30 @@ p {
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid #2f3b48;
+    border-bottom: 1px solid #35354F;
 }
 .section-icon {
     width: 32px;
     height: 32px;
-    background: #101824;
+    background: #2A2E3D;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 0.75rem;
-    color: #ffd700;
+    color: #19A7CE;
     font-weight: 700;
     font-size: 1rem;
 }
 
 /* Decision box */
 .decision-box {
-    background: #101824;
+    background: #2A2E3D;
     border-radius: 12px;
     padding: 2rem 1.5rem;
     margin-top: 2rem;
-    border: 1px solid #2f3b48;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid #35354F;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
     text-align: center;
     animation: fadeInUp 0.5s ease-out forwards;
     transform: translateY(20px);
@@ -234,106 +237,109 @@ p {
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
+    color: #19A7CE !important;
 }
 .decision-box .score {
     font-size: 3rem;
     font-weight: 800;
     margin: 1rem 0;
-    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
+    color: #ECECEC;
+    text-shadow: 0 2px 4px rgba(25,167,206, 0.2);
 }
 .recommendation {
     margin-top: 1rem;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 
 /* Factor cards */
 .factor-card {
     display: flex;
     align-items: center;
-    background-color: #101824;
+    background-color: #2A2E3D;
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border-left: 4px solid #ffd700;
+    border-left: 4px solid #19A7CE;
     transition: all 0.2s ease;
 }
 .factor-card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     transform: translateX(3px);
 }
 .factor-card .factor-letter {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #ffd700;
     margin-right: 1rem;
     width: 2rem;
     height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #101824;
+    background-color: #2A2E3D;
     border-radius: 50%;
-    border: 2px solid #ffd700;
+    border: 2px solid #19A7CE;
+    color: #19A7CE;
 }
 .factor-card .factor-description {
     flex: 1;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 .factor-card .factor-value {
     font-size: 1.25rem;
     font-weight: 700;
     margin-left: auto;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 
 /* Item card styles */
 .item-card {
-    background: #101824;
+    background: #2A2E3D;
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 1px solid #2f3b48;
+    border: 1px solid #35354F;
     display: flex;
     align-items: center;
 }
 .item-icon {
     width: 40px;
     height: 40px;
-    background: #101824;
+    background: #2A2E3D;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 1rem;
-    color: #ffd700;
+    color: #19A7CE;
     font-weight: 700;
     font-size: 1.25rem;
-    border: 2px solid #ffd700;
+    border: 2px solid #19A7CE;
 }
 .item-details {
     flex: 1;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 .item-name {
     font-weight: 600;
     font-size: 1.1rem;
-    color: #ffd700 !important;
+    color: #ECECEC !important;
 }
 .item-cost {
     font-weight: 700;
     font-size: 1.2rem;
-    color: #ffd700 !important;
+    color: #19A7CE !important;
 }
 
-/* Plotly axis & caption text in gold */
+/* Plotly axis & caption text in near-white / teal accent */
 .css-1b0udgb,
 g[class*='tick'],
 text {
-    color: #ffd700 !important;
+    fill: #ECECEC !important;
+    color: #ECECEC !important;
 }
 
 /* Animations */
@@ -357,7 +363,7 @@ st.markdown(custom_css, unsafe_allow_html=True)
 # ------------------------------------------------------------
 def render_logo():
     """
-    Renders the small logo in the sidebar.
+    Renders the small logo in the sidebar with rounded corners.
     """
     current_dir = Path(__file__).parent
     logo_path = current_dir / "munger.png"
@@ -373,13 +379,16 @@ def render_logo():
         </div>
         """, unsafe_allow_html=True)
     except:
+        # Fallback if file not found
         st.markdown("""
         <div class="logo">
-            <div style="width: 50px; height: 50px; background: #101824; border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; 
-                        margin-right: 0.75rem; color: #ffd700; 
+            <div style="width: 50px; height: 50px; background: #2A2E3D; 
+                        border-radius: 12px; display: flex; 
+                        align-items: center; justify-content: center; 
+                        margin-right: 0.75rem; color: #19A7CE; 
                         font-weight: 700; font-size: 1.5rem; 
-                        border: 2px solid #ffd700;">M
+                        border: 2px solid #19A7CE;">
+                M
             </div>
             <div class="logo-text">MUNGER AI</div>
         </div>
@@ -388,7 +397,7 @@ def render_logo():
 
 def render_big_logo_and_title():
     """
-    Renders the large, center logo and subtitle with rounded corners.
+    Renders the large, center logo (rounded) and subtitle.
     """
     current_dir = Path(__file__).parent
     logo_path = current_dir / "munger.png"
@@ -448,8 +457,20 @@ def render_factor_card(factor, value, description):
 # Plotly Charts
 # ------------------------------------------------------------
 def create_radar_chart(factors):
-    categories = ["Discretionary Income","Opportunity Cost","Goal Alignment","Long-Term Impact","Behavioral"]
-    vals = [factors["D"], factors["O"], factors["G"], factors["L"], factors["B"]]
+    categories = [
+        "Discretionary Income",
+        "Opportunity Cost",
+        "Goal Alignment",
+        "Long-Term Impact",
+        "Behavioral"
+    ]
+    vals = [
+        factors["D"], 
+        factors["O"], 
+        factors["G"], 
+        factors["L"], 
+        factors["B"]
+    ]
     # close shape
     vals.append(vals[0])
     categories.append(categories[0])
@@ -459,8 +480,8 @@ def create_radar_chart(factors):
         r=vals,
         theta=categories,
         fill='toself',
-        fillcolor='rgba(255, 215, 0, 0.2)',
-        line=dict(color='#ffd700', width=2),
+        fillcolor='rgba(25,167,206, 0.2)',  # teal accent
+        line=dict(color='#19A7CE', width=2),
         name='Factors'
     ))
     # reference lines
@@ -468,7 +489,7 @@ def create_radar_chart(factors):
         fig.add_trace(go.Scatterpolar(
             r=[i]*len(categories),
             theta=categories,
-            line=dict(color='rgba(200,200,200,0.4)', width=1, dash='dash'),
+            line=dict(color='rgba(236,236,236,0.2)', width=1, dash='dash'),
             showlegend=False
         ))
     fig.update_layout(
@@ -477,12 +498,12 @@ def create_radar_chart(factors):
                 visible=True,
                 range=[-3,3],
                 tickvals=[-2,-1,0,1,2],
-                gridcolor='rgba(200,200,200,0.3)',
-                tickfont=dict(color='#ffd700')
+                gridcolor='rgba(236,236,236,0.1)',
+                tickfont=dict(color='#ECECEC')
             ),
             angularaxis=dict(
-                gridcolor='rgba(200,200,200,0.3)',
-                tickfont=dict(color='#ffd700')
+                gridcolor='rgba(236,236,236,0.1)',
+                tickfont=dict(color='#ECECEC')
             ),
             bgcolor='rgba(0,0,0,0)'
         ),
@@ -495,8 +516,10 @@ def create_radar_chart(factors):
     return fig
 
 def create_pds_gauge(pds):
-    # unified color for bar, text remains gold
-    color = "#ffd700"
+    """
+    Creates a gauge from -10..10 with steps tinted red/orange/green,
+    and teal bar for the needle.
+    """
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pds,
@@ -504,25 +527,25 @@ def create_pds_gauge(pds):
         gauge={
             'axis': {
                 'range':[-10,10],
-                'tickfont': {'color': '#ffd700'}
+                'tickfont': {'color': '#ECECEC'}
             },
-            'bar': {'color': color},
-            'bgcolor':"#101824",
+            'bar': {'color': '#19A7CE'},  # teal bar
+            'bgcolor':"#2A2E3D",
             'borderwidth':2,
-            'bordercolor':"#2f3b48",
+            'bordercolor':"#35354F",
             'steps': [
                 {'range':[-10,0], 'color':'rgba(245,101,101,0.3)'}, 
                 {'range':[0,5], 'color':'rgba(237,137,54,0.3)'},
                 {'range':[5,10], 'color':'rgba(72,187,120,0.3)'}
             ],
         },
-        number={'font': {'color': '#ffd700'}}
+        number={'font': {'color': '#ECECEC'}}
     ))
     fig.update_layout(
         height=250,
         margin=dict(l=20, r=20, t=50, b=20),
         paper_bgcolor='rgba(0,0,0,0)',
-        font={'color':"#ffd700", 'family':"Inter, sans-serif"}
+        font={'color':"#ECECEC", 'family':"Inter, sans-serif"}
     )
     return fig
 
@@ -547,8 +570,8 @@ Guidelines:
 1. D: Higher if leftover_income >> item_cost
 2. O: Positive if no high-interest debt, negative if debt
 3. G: Positive if aligns with main_financial_goal, negative if conflicts
-4. L: Positive if it has a long-term benefit, negative if it doesn't
-5. B: Positive if it's an urgent need, negative if it's impulsive or a 'want'
+4. L: Positive if it has a long-term benefit, negative if not
+5. B: Positive if it's an urgent need, negative if it's an impulsive or non-essential
 
 Evaluate:
 - Item: {item_name}
@@ -638,7 +661,7 @@ def main():
         st.markdown("---")
         st.markdown("© 2025 Munger AI")
     
-    # Show the big center logo & subtitle (rounded corners)
+    # Show the big center logo & subtitle
     render_big_logo_and_title()
     
     # 1. Basic Decision Tool
