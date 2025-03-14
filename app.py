@@ -382,12 +382,35 @@ st.markdown(custom_css, unsafe_allow_html=True)
 # Helper Functions
 # ------------------------------------------------------------
 def render_logo():
-    st.markdown("""
-    <div class="logo">
-        <img src="munger.png" class="logo-img" alt="Munger AI Logo"/>
-        <div class="logo-text">MUNGER AI</div>
-    </div>
-    """, unsafe_allow_html=True)
+    from pathlib import Path
+    import base64
+    
+    # Get the current directory
+    current_dir = Path(__file__).parent
+    
+    # Path to the logo file
+    logo_path = current_dir / "munger.png"
+    
+    # Read the logo file and encode it as base64
+    try:
+        with open(logo_path, "rb") as f:
+            logo_data = base64.b64encode(f.read()).decode()
+        
+        # Display the logo using HTML
+        st.markdown(f"""
+        <div class="logo">
+            <img src="data:image/png;base64,{logo_data}" class="logo-img" alt="Munger AI Logo"/>
+            <div class="logo-text">MUNGER AI</div>
+        </div>
+        """, unsafe_allow_html=True)
+    except:
+        # Fallback if file not found
+        st.markdown("""
+        <div class="logo">
+            <div class="logo-icon">M</div>
+            <div class="logo-text">MUNGER AI</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 def render_section_header(title, icon):
     st.markdown(f"""
