@@ -22,7 +22,7 @@ genai.configure(api_key=GOOGLE_API_KEY)
 GEMINI_MODEL = "gemini-2.0-flash"
 
 # ------------------------------------------------------------
-# Custom CSS based on Munger AI logo (gold robot with blue eyes)
+# Custom CSS: All text = gold (#ffd700), backgrounds & borders unchanged
 # ------------------------------------------------------------
 custom_css = """
 <style>
@@ -30,43 +30,26 @@ custom_css = """
 
 html, body, [data-testid="stAppViewContainer"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #1a202c;
     -webkit-font-smoothing: antialiased;
+    color: #ffd700; /* Make all base text gold */
 }
 
 .main {
     background-color: #081018;
-    color: #ffffff;
 }
 
-/* Headings */
-h1 {
+/* Headings: all gold */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffd700 !important;
     font-weight: 800;
-    font-size: 2.5rem;
-    letter-spacing: -0.025em;
-    color: #ffd700;
-    line-height: 1.2;
     margin-bottom: 1rem;
 }
-h2 {
-    font-weight: 700;
-    font-size: 1.8rem;
-    letter-spacing: -0.025em;
-    color: #ffd700;
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-h3 {
-    font-weight: 600;
-    font-size: 1.3rem;
-    color: #e0e0e0;
-    margin-top: 1.25rem;
-    margin-bottom: 0.5rem;
-}
+
+/* Paragraphs: gold */
 p {
     font-size: 1rem;
     line-height: 1.6;
-    color: #e0e0e0;
+    color: #ffd700 !important;
     margin-bottom: 1rem;
 }
 
@@ -80,24 +63,23 @@ p {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
 }
-[data-testid="stSidebar"] h1 {
-    font-size: 1.5rem;
-    color: #ffd700;
-    margin-bottom: 2rem;
-}
-[data-testid="stSidebar"] p {
-    color: #e0e0e0;
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label {
+    color: #ffd700 !important;
 }
 
-/* Sidebar radio button colors */
+/* Sidebar radio button text = gold */
 .stRadio > div[role="radiogroup"] > label {
-    color: #e0e0e0 !important;
+    color: #ffd700 !important;
 }
 .stRadio > div[role="radiogroup"] > label > div[data-testid="stMarkdownContainer"] > p {
-    color: #e0e0e0 !important;
+    color: #ffd700 !important;
 }
 
-/* Custom form inputs */
+/* Form inputs: text = gold, background dark */
 [data-testid="stTextInput"] input,
 [data-testid="stNumberInput"] input,
 [data-testid="stTextArea"] textarea,
@@ -106,7 +88,7 @@ p {
     border: 1px solid #2f3b48;
     padding: 0.75rem;
     background-color: #101824;
-    color: #e0e0e0;
+    color: #ffd700 !important; /* gold text */
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     width: 100%;
     margin-bottom: 1rem;
@@ -118,22 +100,22 @@ p {
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
 }
 
-/* Custom label colors */
+/* Labels: gold */
 [data-testid="stTextInput"] label,
 [data-testid="stNumberInput"] label,
 [data-testid="stTextArea"] label,
 [data-testid="stSelectbox"] label,
 .stRadio label,
 .stCheckbox label {
-    color: #e0e0e0 !important;
+    color: #ffd700 !important;
 }
 
-/* Eye-catching button styling */
+/* Buttons: dark background, gold text & border */
 [data-testid="baseButton-secondary"], 
 .stButton button {
-    background: #ffd700 !important;
-    color: #101824 !important;
-    border: none !important;
+    background: #101824 !important;
+    color: #ffd700 !important;
+    border: 2px solid #ffd700 !important;
     border-radius: 20px !important;
     padding: 0.75rem 1.5rem !important;
     font-size: 1rem !important;
@@ -146,9 +128,10 @@ p {
 }
 [data-testid="baseButton-secondary"]:hover, 
 .stButton button:hover {
-    background: #ffea00 !important;
+    background: #101824 !important;
+    color: #ffd700 !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 7px 14px rgba(255, 215, 0, 0.3), 0 3px 6px rgba(255, 215, 0, 0.2) !important;
+    box-shadow: 0 7px 14px rgba(255, 215, 0, 0.4), 0 3px 6px rgba(255, 215, 0, 0.3) !important;
 }
 [data-testid="baseButton-secondary"]:active, 
 .stButton button:active {
@@ -163,8 +146,8 @@ p {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 10px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid #2f3b48;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card:hover {
     transform: translateY(-5px);
@@ -184,7 +167,7 @@ p {
 .landing-subtitle {
     font-size: 1.25rem;
     font-weight: 500;
-    color: #e0e0e0;
+    color: #ffd700 !important;
     margin-bottom: 2rem;
     text-align: center;
 }
@@ -224,7 +207,7 @@ p {
     align-items: center;
     justify-content: center;
     margin-right: 0.75rem;
-    color: #00e0ff;
+    color: #ffd700;
     font-weight: 700;
     font-size: 1rem;
 }
@@ -259,15 +242,7 @@ p {
     margin-top: 1rem;
     font-size: 1.25rem;
     font-weight: 600;
-}
-.recommendation.positive {
-    color: #48bb78;
-}
-.recommendation.negative {
-    color: #f56565;
-}
-.recommendation.neutral {
-    color: #ed8936;
+    color: #ffd700 !important;
 }
 
 /* Factor cards */
@@ -279,8 +254,8 @@ p {
     padding: 1rem;
     margin-bottom: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
     border-left: 4px solid #ffd700;
+    transition: all 0.2s ease;
 }
 .factor-card:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -302,21 +277,13 @@ p {
 }
 .factor-card .factor-description {
     flex: 1;
-    color: #e0e0e0;
+    color: #ffd700 !important;
 }
 .factor-card .factor-value {
     font-size: 1.25rem;
     font-weight: 700;
     margin-left: auto;
-}
-.factor-card .factor-value.positive {
-    color: #48bb78;
-}
-.factor-card .factor-value.negative {
-    color: #f56565;
-}
-.factor-card .factor-value.neutral {
-    color: #a0aec0;
+    color: #ffd700 !important; /* All factor values gold */
 }
 
 /* Item card styles */
@@ -339,28 +306,29 @@ p {
     align-items: center;
     justify-content: center;
     margin-right: 1rem;
-    color: #00e0ff;
+    color: #ffd700;
     font-weight: 700;
     font-size: 1.25rem;
-    border: 2px solid #00e0ff;
+    border: 2px solid #ffd700;
 }
 .item-details {
     flex: 1;
+    color: #ffd700 !important;
 }
 .item-name {
     font-weight: 600;
     font-size: 1.1rem;
-    color: #e0e0e0;
+    color: #ffd700 !important;
 }
 .item-cost {
     font-weight: 700;
     font-size: 1.2rem;
-    color: #ffd700;
+    color: #ffd700 !important;
 }
 
-/* Caption text */
+/* Plotly caption text override */
 .css-1b0udgb {
-    color: #a0aec0 !important;
+    color: #ffd700 !important;
 }
 
 /* Animations */
@@ -426,7 +394,8 @@ def render_section_header(title, icon):
 def create_radar_chart(factors):
     categories = ["Discretionary Income","Opportunity Cost","Goal Alignment","Long-Term Impact","Behavioral"]
     vals = [factors["D"], factors["O"], factors["G"], factors["L"], factors["B"]]
-    vals.append(vals[0])  # close shape
+    # Close the shape by repeating the first value
+    vals.append(vals[0])
     categories.append(categories[0])
     
     fig = go.Figure()
@@ -449,14 +418,15 @@ def create_radar_chart(factors):
     fig.update_layout(
         polar=dict(
             radialaxis=dict(
-                visible=True, range=[-3,3],
+                visible=True,
+                range=[-3,3],
                 tickvals=[-2,-1,0,1,2],
                 gridcolor='rgba(200,200,200,0.3)',
-                tickfont=dict(color='#e0e0e0')
+                tickfont=dict(color='#ffd700')
             ),
             angularaxis=dict(
                 gridcolor='rgba(200,200,200,0.3)',
-                tickfont=dict(color='#e0e0e0')
+                tickfont=dict(color='#ffd700')
             ),
             bgcolor='rgba(0,0,0,0)'
         ),
@@ -469,12 +439,18 @@ def create_radar_chart(factors):
     return fig
 
 def create_pds_gauge(pds):
+    """
+    Creates a gauge showing PDS from -10..10. 
+    The bar color changes based on the numeric value.
+    """
+    # Keep background steps color-coded; text remains gold
     if pds >= 5:
-        color = "#48bb78"
+        color = "#ffd700"  # bar color for high PDS
     elif pds < 0:
-        color = "#f56565"
+        color = "#ffd700"  # bar color for negative
     else:
-        color = "#ed8936"
+        color = "#ffd700"  # bar color for neutral
+    
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pds,
@@ -482,25 +458,25 @@ def create_pds_gauge(pds):
         gauge={
             'axis': {
                 'range':[-10,10],
-                'tickfont': {'color': '#e0e0e0'}
+                'tickfont': {'color': '#ffd700'}
             },
-            'bar': {'color':color},
+            'bar': {'color': color},
             'bgcolor':"#101824",
             'borderwidth':2,
             'bordercolor':"#2f3b48",
             'steps': [
-                {'range':[-10,0], 'color':'rgba(245,101,101,0.3)'},  # Darker red
-                {'range':[0,5], 'color':'rgba(237,137,54,0.3)'},     # Darker orange
-                {'range':[5,10], 'color':'rgba(72,187,120,0.3)'}     # Darker green
+                {'range':[-10,0], 'color':'rgba(245,101,101,0.3)'}, 
+                {'range':[0,5], 'color':'rgba(237,137,54,0.3)'},
+                {'range':[5,10], 'color':'rgba(72,187,120,0.3)'}
             ],
         },
-        number={'font': {'color': '#e0e0e0'}}
+        number={'font': {'color': '#ffd700'}}
     ))
     fig.update_layout(
         height=250,
         margin=dict(l=20, r=20, t=50, b=20),
         paper_bgcolor='rgba(0,0,0,0)',
-        font={'color':"#e0e0e0", 'family':"Inter, sans-serif"}
+        font={'color':"#ffd700", 'family':"Inter, sans-serif"}
     )
     return fig
 
@@ -512,6 +488,7 @@ def get_factors_from_gemini(leftover_income, has_high_interest_debt,
                             item_name, item_cost, extra_context=None):
     """
     Returns factor assignments (D,O,G,L,B) from -2..+2 plus brief explanations.
+    Attempts to parse valid JSON from the model's output.
     """
     import google.generativeai as genai
     extra_text = f"\nAdditional user context: {extra_context}" if extra_context else ""
@@ -561,6 +538,8 @@ Return valid JSON:
             st.error("No response from Gemini.")
             return {"D":0,"O":0,"G":0,"L":0,"B":0}
         text = resp.text
+        
+        # Try to extract JSON from the response
         candidates = re.findall(r"(\{[\s\S]*?\})", text)
         for c in candidates:
             try:
@@ -569,6 +548,7 @@ Return valid JSON:
                     return data
             except json.JSONDecodeError:
                 pass
+        
         st.error("Unable to parse valid JSON from AI output.")
         return {"D":0,"O":0,"G":0,"L":0,"B":0}
     except Exception as e:
@@ -576,9 +556,10 @@ Return valid JSON:
         return {"D":0,"O":0,"G":0,"L":0,"B":0}
 
 def compute_pds(factors):
-    return sum(factors.get(f,0) for f in ["D","O","G","L","B"])
+    return sum(factors.get(f, 0) for f in ["D","O","G","L","B"])
 
 def get_recommendation(pds):
+    # Recommendation text is also gold; we won't do color coding here.
     if pds >= 5:
         return "Buy it.", "positive"
     elif pds < 0:
@@ -602,17 +583,12 @@ def render_item_card(item_name, cost):
     """, unsafe_allow_html=True)
 
 def render_factor_card(factor, value, description):
-    if value > 0:
-        val_class = "positive"
-    elif value < 0:
-        val_class = "negative"
-    else:
-        val_class = "neutral"
+    # All factor text gold, no separate color for +/- now
     st.markdown(f"""
     <div class="factor-card">
         <div class="factor-letter">{factor}</div>
         <div class="factor-description">{description}</div>
-        <div class="factor-value {val_class}">{value:+d}</div>
+        <div class="factor-value">{value:+d}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -625,16 +601,15 @@ def main():
         render_logo()
         st.markdown("##### Decision Assistant")
         
-        # Only two pages now:
         pages = ["Decision Tool", "Advanced Tool"]
         selection = st.radio("", pages, label_visibility="collapsed")
         
         st.markdown("---")
         st.markdown("### Quick Tips")
         st.markdown("""
-        - Just enter the item and cost
-        - Or use Advanced Tool for more control
-        - Score above 5 = buy
+        - Enter the item and cost
+        - Or use Advanced Tool for full control
+        - Score ≥ 5 suggests buying
         """)
         
         st.markdown("---")
@@ -644,7 +619,7 @@ def main():
     from pathlib import Path
     import base64
     
-    # Try to load and display the large logo
+    # Try to load and display a larger logo
     try:
         current_dir = Path(__file__).parent
         logo_path = current_dir / "munger.png"
@@ -652,12 +627,9 @@ def main():
         with open(logo_path, "rb") as f:
             logo_data = base64.b64encode(f.read()).decode()
         
-        # Display the logo using HTML on the landing page
         st.markdown(f"""
-        <div class="big-logo-container">
-            <img src="data:image/png;base64,{logo_data}" class="big-logo" alt="Munger AI"/>
-        </div>
         <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="data:image/png;base64,{logo_data}" style="width:120px; margin-bottom:1rem;" alt="Munger AI"/>
             <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -675,7 +647,7 @@ def main():
     # -----------------------------------
     if selection == "Decision Tool":
         render_section_header("What are you buying?", "🛍️")
-        # Basic form
+        
         with st.form("basic_form"):
             col1, col2 = st.columns([3,1])
             with col1:
@@ -687,7 +659,7 @@ def main():
         
         if submit_btn:
             with st.spinner("Analyzing with AI..."):
-                # Minimal logic for leftover etc. (could be expanded)
+                # Minimal example assumptions
                 leftover_income = max(1000, cost * 2)
                 has_high_interest_debt = "No"
                 main_financial_goal = "Save for emergencies"
@@ -724,7 +696,10 @@ def main():
                         "B": "Behavioral"
                     }
                     for f in ["D","O","G","L","B"]:
-                        render_factor_card(f, factors[f], factor_labels[f])
+                        desc = factor_labels[f]
+                        val = factors.get(f, 0)
+                        render_factor_card(f, val, desc)
+                        # If there's an explanation key from AI, show as caption
                         if f"{f}_explanation" in factors:
                             st.caption(factors[f"{f}_explanation"])
                 with c2:
@@ -740,9 +715,7 @@ def main():
     # -----------------------------------
     else:  # selection == "Advanced Tool"
         render_section_header("Advanced Purchase Query", "⚙️")
-        st.markdown("""
-        Customize **all** parameters for a more precise analysis.
-        """)
+        st.markdown("Customize **all** parameters for a more precise analysis.")
         
         with st.form("advanced_form"):
             st.subheader("Purchase Details")
@@ -794,7 +767,9 @@ def main():
                         "B": "Behavioral"
                     }
                     for f in ["D","O","G","L","B"]:
-                        render_factor_card(f, factors[f], factor_labels[f])
+                        desc = factor_labels[f]
+                        val = factors.get(f, 0)
+                        render_factor_card(f, val, desc)
                         if f"{f}_explanation" in factors:
                             st.caption(factors[f"{f}_explanation"])
                 with c2:
