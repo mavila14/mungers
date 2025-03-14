@@ -5,6 +5,15 @@ import google.generativeai as genai
 import plotly.graph_objects as go
 
 # ------------------------------------------------------------
+# Set page config (MUST BE FIRST STREAMLIT COMMAND)
+# ------------------------------------------------------------
+st.set_page_config(
+    page_title="Munger AI - Purchase Decisions",
+    page_icon="💰",
+    layout="wide"
+)
+
+# ------------------------------------------------------------
 # Configure your Google Generative AI API key
 # ------------------------------------------------------------
 GOOGLE_API_KEY = st.secrets["google"]["api_key"]
@@ -588,12 +597,6 @@ def render_factor_card(factor, value, description):
 # Main App
 # ------------------------------------------------------------
 def main():
-    # Set page config
-    st.set_page_config(
-        page_title="Munger AI - Purchase Decisions",
-        page_icon="💰",
-        layout="wide"
-    )
     
     with st.sidebar:
         render_logo()
