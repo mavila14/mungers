@@ -3,6 +3,8 @@ import re
 import json
 import google.generativeai as genai
 import plotly.graph_objects as go
+import base64
+from pathlib import Path
 
 # ------------------------------------------------------------
 # Set page config (MUST BE FIRST STREAMLIT COMMAND)
@@ -22,30 +24,33 @@ genai.configure(api_key=GOOGLE_API_KEY)
 GEMINI_MODEL = "gemini-2.0-flash"
 
 # ------------------------------------------------------------
-# Custom CSS: All text = gold (#ffd700), backgrounds & borders unchanged
+# Custom CSS: All gold text, dark background, rounded logos
 # ------------------------------------------------------------
 custom_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Make the entire background dark */
 html, body, [data-testid="stAppViewContainer"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #ffd700; /* gold text */
+    background-color: #101824 !important; /* dark background */
     -webkit-font-smoothing: antialiased;
-    color: #ffd700; /* Make all base text gold */
 }
 
+/* Remove or override any .main background so main area isn't white */
 .main {
-    background-color: #081018;
+    background-color: #101824 !important;
 }
 
-/* Headings: all gold */
+/* Headings in gold */
 h1, h2, h3, h4, h5, h6 {
     color: #ffd700 !important;
     font-weight: 800;
     margin-bottom: 1rem;
 }
 
-/* Paragraphs: gold */
+/* Paragraphs in gold */
 p {
     font-size: 1rem;
     line-height: 1.6;
@@ -71,7 +76,7 @@ p {
     color: #ffd700 !important;
 }
 
-/* Sidebar radio button text = gold */
+/* Sidebar radio buttons in gold */
 .stRadio > div[role="radiogroup"] > label {
     color: #ffd700 !important;
 }
@@ -79,7 +84,7 @@ p {
     color: #ffd700 !important;
 }
 
-/* Form inputs: text = gold, background dark */
+/* Inputs */
 [data-testid="stTextInput"] input,
 [data-testid="stNumberInput"] input,
 [data-testid="stTextArea"] textarea,
@@ -88,7 +93,7 @@ p {
     border: 1px solid #2f3b48;
     padding: 0.75rem;
     background-color: #101824;
-    color: #ffd700 !important; /* gold text */
+    color: #ffd700 !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     width: 100%;
     margin-bottom: 1rem;
@@ -100,7 +105,7 @@ p {
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
 }
 
-/* Labels: gold */
+/* Labels in gold */
 [data-testid="stTextInput"] label,
 [data-testid="stNumberInput"] label,
 [data-testid="stTextArea"] label,
@@ -172,7 +177,7 @@ p {
     text-align: center;
 }
 
-/* Logo styling */
+/* Smaller sidebar logo styling: round corners a bit */
 .logo {
     display: flex;
     align-items: center;
@@ -181,7 +186,7 @@ p {
 .logo-img {
     width: 50px;
     height: 50px;
-    border-radius: 8px;
+    border-radius: 12px; /* more rounded */
     margin-right: 0.75rem;
 }
 .logo-text {
@@ -228,13 +233,11 @@ p {
 .decision-box h2 {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #ffd700;
     margin-bottom: 1.5rem;
 }
 .decision-box .score {
     font-size: 3rem;
     font-weight: 800;
-    color: #ffd700;
     margin: 1rem 0;
     text-shadow: 0 2px 4px rgba(255, 215, 0, 0.2);
 }
@@ -283,7 +286,7 @@ p {
     font-size: 1.25rem;
     font-weight: 700;
     margin-left: auto;
-    color: #ffd700 !important; /* All factor values gold */
+    color: #ffd700 !important;
 }
 
 /* Item card styles */
@@ -326,8 +329,10 @@ p {
     color: #ffd700 !important;
 }
 
-/* Plotly caption text override */
-.css-1b0udgb {
+/* Plotly axis & caption text in gold */
+.css-1b0udgb,
+g[class*='tick'],
+text {
     color: #ffd700 !important;
 }
 
@@ -346,21 +351,52 @@ p {
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
+
 # ------------------------------------------------------------
 # Helper Functions
 # ------------------------------------------------------------
-def render_big_logo_and_title():
-    import base64
-    from pathlib import Path
-
+def render_logo():
+    """
+    Renders the small logo in the sidebar.
+    """
+    current_dir = Path(__file__).parent
+    logo_path = current_dir / "munger.png"
+    
     try:
-        current_dir = Path(__file__).parent
-        logo_path = current_dir / "munger.png"
-        
         with open(logo_path, "rb") as f:
             logo_data = base64.b64encode(f.read()).decode()
         
-        # Notice the border-radius added inline here:
+        st.markdown(f"""
+        <div class="logo">
+            <img src="data:image/png;base64,{logo_data}" class="logo-img" alt="Munger AI Logo"/>
+            <div class="logo-text">MUNGER AI</div>
+        </div>
+        """, unsafe_allow_html=True)
+    except:
+        st.markdown("""
+        <div class="logo">
+            <div style="width: 50px; height: 50px; background: #101824; border-radius: 12px; 
+                        display: flex; align-items: center; justify-content: center; 
+                        margin-right: 0.75rem; color: #ffd700; 
+                        font-weight: 700; font-size: 1.5rem; 
+                        border: 2px solid #ffd700;">M
+            </div>
+            <div class="logo-text">MUNGER AI</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+def render_big_logo_and_title():
+    """
+    Renders the large, center logo and subtitle with rounded corners.
+    """
+    current_dir = Path(__file__).parent
+    logo_path = current_dir / "munger.png"
+    
+    try:
+        with open(logo_path, "rb") as f:
+            logo_data = base64.b64encode(f.read()).decode()
+        
         st.markdown(f"""
         <div style="text-align: center; margin-bottom: 2rem;">
             <img src="data:image/png;base64,{logo_data}"
@@ -370,13 +406,13 @@ def render_big_logo_and_title():
         </div>
         """, unsafe_allow_html=True)
     except:
-        # Fallback text if logo not found
         st.markdown("""
         <div style="text-align: center; margin-bottom: 2rem;">
             <h1 class="landing-title">MUNGER AI</h1>
             <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
         </div>
         """, unsafe_allow_html=True)
+
 
 def render_section_header(title, icon):
     st.markdown(f"""
@@ -386,13 +422,35 @@ def render_section_header(title, icon):
     </div>
     """, unsafe_allow_html=True)
 
+def render_item_card(item_name, cost):
+    icon = "💼" if cost >= 1000 else "🛍️"
+    st.markdown(f"""
+    <div class="item-card">
+        <div class="item-icon">{icon}</div>
+        <div class="item-details">
+            <div class="item-name">{item_name}</div>
+        </div>
+        <div class="item-cost">${cost:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def render_factor_card(factor, value, description):
+    st.markdown(f"""
+    <div class="factor-card">
+        <div class="factor-letter">{factor}</div>
+        <div class="factor-description">{description}</div>
+        <div class="factor-value">{value:+d}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # ------------------------------------------------------------
 # Plotly Charts
 # ------------------------------------------------------------
 def create_radar_chart(factors):
     categories = ["Discretionary Income","Opportunity Cost","Goal Alignment","Long-Term Impact","Behavioral"]
     vals = [factors["D"], factors["O"], factors["G"], factors["L"], factors["B"]]
-    # Close the shape by repeating the first value
+    # close shape
     vals.append(vals[0])
     categories.append(categories[0])
     
@@ -405,12 +463,12 @@ def create_radar_chart(factors):
         line=dict(color='#ffd700', width=2),
         name='Factors'
     ))
-    # Reference lines
+    # reference lines
     for i in [-2, -1, 0, 1, 2]:
         fig.add_trace(go.Scatterpolar(
             r=[i]*len(categories),
             theta=categories,
-            line=dict(color='rgba(200,200,200,0.5)', width=1, dash='dash'),
+            line=dict(color='rgba(200,200,200,0.4)', width=1, dash='dash'),
             showlegend=False
         ))
     fig.update_layout(
@@ -437,18 +495,8 @@ def create_radar_chart(factors):
     return fig
 
 def create_pds_gauge(pds):
-    """
-    Creates a gauge showing PDS from -10..10. 
-    The bar color changes based on the numeric value.
-    """
-    # Keep background steps color-coded; text remains gold
-    if pds >= 5:
-        color = "#ffd700"  # bar color for high PDS
-    elif pds < 0:
-        color = "#ffd700"  # bar color for negative
-    else:
-        color = "#ffd700"  # bar color for neutral
-    
+    # unified color for bar, text remains gold
+    color = "#ffd700"
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=pds,
@@ -478,6 +526,7 @@ def create_pds_gauge(pds):
     )
     return fig
 
+
 # ------------------------------------------------------------
 # AI Logic
 # ------------------------------------------------------------
@@ -488,7 +537,6 @@ def get_factors_from_gemini(leftover_income, has_high_interest_debt,
     Returns factor assignments (D,O,G,L,B) from -2..+2 plus brief explanations.
     Attempts to parse valid JSON from the model's output.
     """
-    import google.generativeai as genai
     extra_text = f"\nAdditional user context: {extra_context}" if extra_context else ""
     
     prompt = f"""
@@ -499,8 +547,8 @@ Guidelines:
 1. D: Higher if leftover_income >> item_cost
 2. O: Positive if no high-interest debt, negative if debt
 3. G: Positive if aligns with main_financial_goal, negative if conflicts
-4. L: Positive if long-term benefit, negative if extra cost
-5. B: Positive if urgent need, negative if impulsive want
+4. L: Positive if it has a long-term benefit, negative if it doesn't
+5. B: Positive if it's an urgent need, negative if it's impulsive or a 'want'
 
 Evaluate:
 - Item: {item_name}
@@ -519,9 +567,12 @@ Return valid JSON:
   "L": -1,
   "B": 2,
   "D_explanation": "...",
-  ...
+  "O_explanation": "...",
+  "G_explanation": "...",
+  "L_explanation": "...",
+  "B_explanation": "..."
 }}
-    """.strip()
+""".strip()
     
     try:
         model = genai.GenerativeModel(GEMINI_MODEL)
@@ -535,9 +586,9 @@ Return valid JSON:
         if not resp:
             st.error("No response from Gemini.")
             return {"D":0,"O":0,"G":0,"L":0,"B":0}
-        text = resp.text
         
-        # Try to extract JSON from the response
+        text = resp.text
+        # Attempt to extract valid JSON from the response
         candidates = re.findall(r"(\{[\s\S]*?\})", text)
         for c in candidates:
             try:
@@ -557,7 +608,6 @@ def compute_pds(factors):
     return sum(factors.get(f, 0) for f in ["D","O","G","L","B"])
 
 def get_recommendation(pds):
-    # Recommendation text is also gold; we won't do color coding here.
     if pds >= 5:
         return "Buy it.", "positive"
     elif pds < 0:
@@ -565,36 +615,11 @@ def get_recommendation(pds):
     else:
         return "Consider carefully.", "neutral"
 
-# ------------------------------------------------------------
-# Additional UI Helpers
-# ------------------------------------------------------------
-def render_item_card(item_name, cost):
-    icon = "💼" if cost >= 1000 else "🛍️"
-    st.markdown(f"""
-    <div class="item-card">
-        <div class="item-icon">{icon}</div>
-        <div class="item-details">
-            <div class="item-name">{item_name}</div>
-        </div>
-        <div class="item-cost">${cost:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-def render_factor_card(factor, value, description):
-    # All factor text gold, no separate color for +/- now
-    st.markdown(f"""
-    <div class="factor-card">
-        <div class="factor-letter">{factor}</div>
-        <div class="factor-description">{description}</div>
-        <div class="factor-value">{value:+d}</div>
-    </div>
-    """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------
 # Main App
 # ------------------------------------------------------------
 def main():
-    
     with st.sidebar:
         render_logo()
         st.markdown("##### Decision Assistant")
@@ -613,36 +638,10 @@ def main():
         st.markdown("---")
         st.markdown("© 2025 Munger AI")
     
-    # Main heading (always shown)
-    from pathlib import Path
-    import base64
+    # Show the big center logo & subtitle (rounded corners)
+    render_big_logo_and_title()
     
-    # Try to load and display a larger logo
-    try:
-        current_dir = Path(__file__).parent
-        logo_path = current_dir / "munger.png"
-        
-        with open(logo_path, "rb") as f:
-            logo_data = base64.b64encode(f.read()).decode()
-        
-        st.markdown(f"""
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <img src="data:image/png;base64,{logo_data}" style="width:120px; margin-bottom:1rem;" alt="Munger AI"/>
-            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    except:
-        # Fallback to text if logo can't be loaded
-        st.markdown("""
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 class="landing-title">MUNGER AI</h1>
-            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # -----------------------------------
     # 1. Basic Decision Tool
-    # -----------------------------------
     if selection == "Decision Tool":
         render_section_header("What are you buying?", "🛍️")
         
@@ -657,7 +656,6 @@ def main():
         
         if submit_btn:
             with st.spinner("Analyzing with AI..."):
-                # Minimal example assumptions
                 leftover_income = max(1000, cost * 2)
                 has_high_interest_debt = "No"
                 main_financial_goal = "Save for emergencies"
@@ -694,12 +692,12 @@ def main():
                         "B": "Behavioral"
                     }
                     for f in ["D","O","G","L","B"]:
-                        desc = factor_labels[f]
                         val = factors.get(f, 0)
-                        render_factor_card(f, val, desc)
-                        # If there's an explanation key from AI, show as caption
-                        if f"{f}_explanation" in factors:
-                            st.caption(factors[f"{f}_explanation"])
+                        render_factor_card(f, val, factor_labels[f])
+                        exp_key = f"{f}_explanation"
+                        if exp_key in factors:
+                            st.caption(factors[exp_key])
+                            
                 with c2:
                     st.markdown("### Factor Analysis")
                     radar_fig = create_radar_chart(factors)
@@ -708,10 +706,8 @@ def main():
                     gauge_fig = create_pds_gauge(pds)
                     st.plotly_chart(gauge_fig, use_container_width=True)
     
-    # -----------------------------------
     # 2. Advanced Tool
-    # -----------------------------------
-    else:  # selection == "Advanced Tool"
+    else:
         render_section_header("Advanced Purchase Query", "⚙️")
         st.markdown("Customize **all** parameters for a more precise analysis.")
         
@@ -765,11 +761,11 @@ def main():
                         "B": "Behavioral"
                     }
                     for f in ["D","O","G","L","B"]:
-                        desc = factor_labels[f]
                         val = factors.get(f, 0)
-                        render_factor_card(f, val, desc)
-                        if f"{f}_explanation" in factors:
-                            st.caption(factors[f"{f}_explanation"])
+                        render_factor_card(f, val, factor_labels[f])
+                        exp_key = f"{f}_explanation"
+                        if exp_key in factors:
+                            st.caption(factors[exp_key])
                 with c2:
                     st.markdown("### Factor Analysis")
                     radar_fig = create_radar_chart(factors)
