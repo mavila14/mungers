@@ -407,7 +407,7 @@ def render_logo():
         # Fallback if file not found
         st.markdown("""
         <div class="logo">
-            <div class="logo-icon">M</div>
+            <div style="width: 50px; height: 50px; background: #101824; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: #ffd700; font-weight: 700; font-size: 1.5rem; border: 2px solid #ffd700;">M</div>
             <div class="logo-text">MUNGER AI</div>
         </div>
         """, unsafe_allow_html=True)
