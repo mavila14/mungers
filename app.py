@@ -349,34 +349,32 @@ st.markdown(custom_css, unsafe_allow_html=True)
 # ------------------------------------------------------------
 # Helper Functions
 # ------------------------------------------------------------
-def render_logo():
-    from pathlib import Path
+def render_big_logo_and_title():
     import base64
-    
-    # Get the current directory
-    current_dir = Path(__file__).parent
-    
-    # Path to the logo file
-    logo_path = current_dir / "munger.png"
-    
-    # Read the logo file and encode it as base64
+    from pathlib import Path
+
     try:
+        current_dir = Path(__file__).parent
+        logo_path = current_dir / "munger.png"
+        
         with open(logo_path, "rb") as f:
             logo_data = base64.b64encode(f.read()).decode()
         
-        # Display the logo using HTML
+        # Notice the border-radius added inline here:
         st.markdown(f"""
-        <div class="logo">
-            <img src="data:image/png;base64,{logo_data}" class="logo-img" alt="Munger AI Logo"/>
-            <div class="logo-text">MUNGER AI</div>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="data:image/png;base64,{logo_data}"
+                 style="width:120px; margin-bottom:1rem; border-radius:12px;"
+                 alt="Munger AI"/>
+            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
         </div>
         """, unsafe_allow_html=True)
     except:
-        # Fallback if file not found
+        # Fallback text if logo not found
         st.markdown("""
-        <div class="logo">
-            <div style="width: 50px; height: 50px; background: #101824; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; color: #ffd700; font-weight: 700; font-size: 1.5rem; border: 2px solid #ffd700;">M</div>
-            <div class="logo-text">MUNGER AI</div>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 class="landing-title">MUNGER AI</h1>
+            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
         </div>
         """, unsafe_allow_html=True)
 
