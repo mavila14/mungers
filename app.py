@@ -641,12 +641,34 @@ def main():
         st.markdown("© 2025 Munger AI")
     
     # Main heading (always shown)
-    st.markdown("""
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 class="landing-title">MUNGER AI</h1>
-        <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    from pathlib import Path
+    import base64
+    
+    # Try to load and display the large logo
+    try:
+        current_dir = Path(__file__).parent
+        logo_path = current_dir / "munger.png"
+        
+        with open(logo_path, "rb") as f:
+            logo_data = base64.b64encode(f.read()).decode()
+        
+        # Display the logo using HTML on the landing page
+        st.markdown(f"""
+        <div class="big-logo-container">
+            <img src="data:image/png;base64,{logo_data}" class="big-logo" alt="Munger AI"/>
+        </div>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    except:
+        # Fallback to text if logo can't be loaded
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 class="landing-title">MUNGER AI</h1>
+            <p class="landing-subtitle">Should you buy it? Our AI decides in seconds.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     # -----------------------------------
     # 1. Basic Decision Tool
